@@ -1,1 +1,1 @@
-# Alumni-Student-Tracker-Networking-Hub
+# Alumni-Student-Tracker & Networking-Hub
