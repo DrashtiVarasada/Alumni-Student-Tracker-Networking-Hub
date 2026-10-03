@@ -1,0 +1,100 @@
+﻿@model AlumniHub.Models.StudentProfile
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<div class="container mt-4">
+
+    <!-- Welcome Banner -->
+    <div class="card bg-primary text-white shadow mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrEmpty(Model.ProfileImage))
+                {
+                    <img src="/uploads/@Model.ProfileImage"
+                         class="rounded-circle"
+                         style="width:80px; height:80px; object-fit:cover; border:3px solid white;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-white text-primary d-inline-flex
+                        align-items-center justify-content-center"
+                         style="width:80px; height:80px; font-size:35px;">
+                        👤
+                    </div>
+                }
+                <div>
+                    <h3 class="mb-0">Welcome, @Model.FullName! 👋</h3>
+                    <p class="mb-0 opacity-75">@Model.Department — Batch @Model.BatchYear</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow text-center h-100">
+                <div class="card-body p-4">
+                    <div style="font-size:40px">👤</div>
+                    <h5 class="mt-2">My Profile</h5>
+                    <p class="text-muted small">View and edit your profile</p>
+                    <a asp-controller="StudentProfile" asp-action="Index"
+                       class="btn btn-primary w-100">View Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow text-center h-100">
+                <div class="card-body p-4">
+                    <div style="font-size:40px">🎓</div>
+                    <h5 class="mt-2">Browse Alumni</h5>
+                    <p class="text-muted small">Connect with alumni & students</p>
+                    <a asp-controller="Connection" asp-action="Index"
+                       class="btn btn-primary w-100">Browse</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow text-center h-100">
+                <div class="card-body p-4">
+                    <div style="font-size:40px">📰</div>
+                    <h5 class="mt-2">Posts & Feed</h5>
+                    <p class="text-muted small">Share updates & view posts</p>
+                    <a asp-controller="Post" asp-action="Index"
+                       class="btn btn-primary w-100">View Feed</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Summary -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">📋 Your Profile Summary</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered mb-0">
+                <tr>
+                    <th style="width:30%">Full Name</th>
+                    <td>@Model.FullName</td>
+                </tr>
+                <tr>
+                    <th>Department</th>
+                    <td>@Model.Department</td>
+                </tr>
+                <tr>
+                    <th>Batch Year</th>
+                    <td>@Model.BatchYear</td>
+                </tr>
+                <tr>
+                    <th>Bio</th>
+                    <td>@(string.IsNullOrEmpty(Model.Bio) ? "No bio added yet" : Model.Bio)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</div>

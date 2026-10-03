@@ -15,5 +15,8 @@
         public string Content { get; set; } = string.Empty;
 
         public DateTime SentAt { get; set; } = DateTime.Now;
+
+        // Tracks whether the receiver has seen the message
+        public bool IsRead { get; set; } = false;
     }
 }

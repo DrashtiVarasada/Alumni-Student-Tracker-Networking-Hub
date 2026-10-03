@@ -1,0 +1,246 @@
+﻿@model IEnumerable<AlumniHub.Models.Post>
+@{
+    ViewData["Title"] = "Community Feed";
+    var currentUserId = ViewBag.CurrentUserId as string;
+    var activeFilter = ViewBag.ActiveFilter as string ?? "all";
+    int allCount = ViewBag.AllPostsCount ?? 0;
+    int myCount = ViewBag.MyPostsCount ?? 0;
+    var studentProfiles = ViewBag.StudentProfiles as Dictionary<string, AlumniHub.Models.StudentProfile> ?? new();
+    var alumniProfiles = ViewBag.AlumniProfiles as Dictionary<string, AlumniHub.Models.AlumniProfile> ?? new();
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Alerts -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Create Post Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">📝 Create a Post</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3"
+                                      placeholder="Share an update, question, or announcement with the community..."></textarea>
+                        </div>
+
+                        <div class="row align-items-center g-2">
+                            <div class="col-md-8">
+                                <label class="form-label small text-muted mb-1">Add Image (Optional)</label>
+                                <input type="file" name="postImage" class="form-control form-control-sm" accept="image/*" />
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-4">
+                                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                                    🚀 Publish Post
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Feed Filter Tabs (All Posts vs My Posts) -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body p-2">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <a class="nav-link @(activeFilter == "all" ? "active" : "") fw-bold"
+                               asp-action="Index" asp-route-filter="all">
+                                🌐 All Posts (@allCount)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(activeFilter == "my" ? "active" : "") fw-bold"
+                               asp-action="Index" asp-route-filter="my">
+                                👤 My Posts (@myCount)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Posts List -->
+            @if (!Model.Any())
+            {
+                <div class="card shadow-sm border-0 text-center py-5">
+                    <div class="card-body">
+                        <div style="font-size: 50px;">💬</div>
+                        @if (activeFilter == "my")
+                        {
+                            <h5 class="text-muted mt-2">You haven't created any posts yet</h5>
+                            <p class="text-muted small">Use the box above to share your first update!</p>
+                        }
+                        else
+                        {
+                            <h5 class="text-muted mt-2">No posts yet!</h5>
+                            <p class="text-muted small">Be the first to share an update with the alumni and student community.</p>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var post in Model)
+                {
+                    string authorName = post.User?.Email ?? "User";
+                    string authorRole = post.User?.Role ?? "Member";
+                    string? authorImage = null;
+
+                    if (studentProfiles.TryGetValue(post.UserId, out var sp))
+                    {
+                        authorName = sp.FullName;
+                        authorRole = "Student";
+                        authorImage = sp.ProfileImage;
+                    }
+                    else if (alumniProfiles.TryGetValue(post.UserId, out var ap))
+                    {
+                        authorName = ap.FullName;
+                        authorRole = "Alumni";
+                        authorImage = ap.ProfileImage;
+                    }
+
+                    <div class="card shadow-sm mb-4 border-0">
+                        <!-- Post Header -->
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrEmpty(authorImage))
+                                {
+                                    <img src="/uploads/@authorImage" class="rounded-circle border"
+                                         style="width: 45px; height: 45px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle @(authorRole == "Student" ? "bg-primary" : "bg-dark") text-white d-flex align-items-center justify-content-center"
+                                         style="width: 45px; height: 45px; font-weight: bold;">
+                                        @(authorName.Length > 0 ? authorName.Substring(0, 1).ToUpper() : "U")
+                                    </div>
+                                }
+                                <div>
+                                    <h6 class="mb-0 fw-bold">@authorName</h6>
+                                    <small class="text-muted">
+                                        <span class="badge @(authorRole == "Student" ? "bg-primary" : "bg-dark") me-1">@authorRole</span>
+                                        @post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")
+                                    </small>
+                                </div>
+                            </div>
+
+                            @if (post.UserId == currentUserId)
+                            {
+                                <form asp-action="Delete" asp-route-id="@post.Id" method="post"
+                                      onsubmit="return confirm('Are you sure you want to delete this post?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="filter" value="@activeFilter" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete post">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
+                            }
+                        </div>
+
+                        <!-- Post Body -->
+                        <div class="card-body p-4">
+                            @if (!string.IsNullOrWhiteSpace(post.Content))
+                            {
+                                <p class="card-text mb-3" style="white-space: pre-line;">@post.Content</p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(post.Image))
+                            {
+                                <div class="text-center mb-3">
+                                    <img src="/uploads/@post.Image" class="img-fluid rounded border"
+                                         style="max-height: 450px; width: 100%; object-fit: cover;" />
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="card-footer bg-light p-3">
+                            <h6 class="fw-bold mb-3">💬 Comments (@post.Comments.Count)</h6>
+
+                            <!-- List of Comments -->
+                            @if (post.Comments.Any())
+                            {
+                                <div class="d-flex flex-column gap-2 mb-3">
+                                    @foreach (var comment in post.Comments.OrderBy(c => c.CreatedAt))
+                                    {
+                                        string commentAuthorName = comment.User?.Email ?? "User";
+                                        string commentRole = comment.User?.Role ?? "Member";
+
+                                        if (studentProfiles.TryGetValue(comment.UserId, out var csp))
+                                        {
+                                            commentAuthorName = csp.FullName;
+                                            commentRole = "Student";
+                                        }
+                                        else if (alumniProfiles.TryGetValue(comment.UserId, out var cap))
+                                        {
+                                            commentAuthorName = cap.FullName;
+                                            commentRole = "Alumni";
+                                        }
+
+                                        <div class="p-2 bg-white rounded border">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="fw-bold">
+                                                    @commentAuthorName
+                                                    <span class="badge @(commentRole == "Student" ? "bg-primary" : "bg-dark") ms-1" style="font-size: 10px;">@commentRole</span>
+                                                </small>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted" style="font-size: 11px;">
+                                                        @comment.CreatedAt.ToLocalTime().ToString("MMM dd, hh:mm tt")
+                                                    </small>
+                                                    @if (comment.UserId == currentUserId)
+                                                    {
+                                                        <form asp-action="DeleteComment" asp-route-id="@comment.Id" method="post" class="d-inline"
+                                                              onsubmit="return confirm('Delete this comment?')">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="filter" value="@activeFilter" />
+                                                            <button type="submit" class="btn btn-link text-danger p-0 border-0" style="font-size: 11px;">
+                                                                ✕
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="small text-secondary">@comment.Content</div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Add Comment Form -->
+                            <form asp-action="AddComment" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="postId" value="@post.Id" />
+                                <input type="hidden" name="filter" value="@activeFilter" />
+                                <div class="input-group">
+                                    <input type="text" name="content" class="form-control form-control-sm"
+                                           placeholder="Write a comment..." required />
+                                    <button class="btn btn-sm btn-primary" type="submit">Reply</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+</div>

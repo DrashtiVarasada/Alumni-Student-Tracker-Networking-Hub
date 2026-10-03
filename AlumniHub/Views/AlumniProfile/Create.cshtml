@@ -1,6 +1,6 @@
 ﻿@model AlumniHub.Models.AlumniProfile
 @{
-    ViewData["Title"] = "Create Alumni Profile";
+    ViewData["Title"] = "Complete Alumni Profile";
 }
 
 <div class="container mt-4">
@@ -15,39 +15,41 @@
                         @Html.AntiForgeryToken()
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Full Name</label>
-                            <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
+                            <label class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control" placeholder="e.g. Priya Patel" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Department</label>
-                            <input asp-for="Department" class="form-control" placeholder="e.g. Computer Science" />
+                            <label class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+                            <input asp-for="Department" class="form-control" placeholder="e.g. Computer Engineering" />
+                            <span asp-validation-for="Department" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Graduation Year</label>
-                            <input asp-for="GraduationYear" class="form-control" type="number" placeholder="e.g. 2020" />
+                            <label class="form-label fw-bold">Graduation Year <span class="text-danger">*</span></label>
+                            <input asp-for="GraduationYear" class="form-control" type="number" placeholder="e.g. 2022" />
+                            <span asp-validation-for="GraduationYear" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Current Company</label>
-                            <input asp-for="CurrentCompany" class="form-control" placeholder="e.g. Google" />
+                            <label class="form-label fw-bold">Current Company (Optional)</label>
+                            <input asp-for="CurrentCompany" class="form-control" placeholder="e.g. TCS / Infosys / Google" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Designation</label>
+                            <label class="form-label fw-bold">Designation (Optional)</label>
                             <input asp-for="Designation" class="form-control" placeholder="e.g. Software Engineer" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">City</label>
-                            <input asp-for="City" class="form-control" placeholder="e.g. Mumbai" />
+                            <label class="form-label fw-bold">City (Optional)</label>
+                            <input asp-for="City" class="form-control" placeholder="e.g. Ahmedabad / Pune" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Bio</label>
-                            <textarea asp-for="Bio" class="form-control" rows="3"
-                                placeholder="Share your journey..."></textarea>
+                            <label class="form-label fw-bold">Bio (Optional)</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -55,12 +57,14 @@
                             <input type="file" name="profileImage" class="form-control" accept="image/*" />
                         </div>
 
-                        <button type="submit" class="btn btn-dark w-100 mt-2">
-                            Save Profile
-                        </button>
+                        <button type="submit" class="btn btn-dark w-100 py-2 mt-3">Save Profile</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

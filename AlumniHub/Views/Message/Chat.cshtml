@@ -1,0 +1,97 @@
+﻿@model IEnumerable<AlumniHub.Models.Message>
+@{
+    ViewData["Title"] = "Chat";
+    var currentUserId = ViewBag.CurrentUserId as string;
+    var partnerName = ViewBag.PartnerName as string;
+    var partnerRole = ViewBag.PartnerRole as string;
+    var partnerImage = ViewBag.PartnerImage as string;
+    var partnerId = ViewBag.PartnerId as string;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-sm border-0">
+                <!-- Header with Back button and user info -->
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <a asp-controller="Connection" asp-action="Index" asp-route-tab="connections"
+                           class="btn btn-outline-secondary btn-sm">
+                            ← Back
+                        </a>
+
+                        @if (!string.IsNullOrEmpty(partnerImage))
+                        {
+                            <img src="/uploads/@partnerImage" class="rounded-circle border"
+                                 style="width: 45px; height: 45px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle @(partnerRole == "Student" ? "bg-primary" : "bg-dark") text-white d-flex align-items-center justify-content-center"
+                                 style="width: 45px; height: 45px; font-weight: bold;">
+                                @(partnerName?.Length > 0 ? partnerName.Substring(0, 1).ToUpper() : "U")
+                            </div>
+                        }
+
+                        <div>
+                            <h5 class="mb-0 fw-bold">@partnerName</h5>
+                            <span class="badge @(partnerRole == "Student" ? "bg-primary" : "bg-dark")" style="font-size: 11px;">
+                                @partnerRole
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="chatBox" class="card-body p-4 bg-light overflow-auto" style="height: 400px; display: flex; flex-direction: column;">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center text-muted my-auto">
+                            <div style="font-size: 40px;">💬</div>
+                            <p class="mt-2">No messages yet. Send the first message below!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var msg in Model)
+                        {
+                            bool isMine = msg.SenderId == currentUserId;
+                            <div class="d-flex mb-3 @(isMine ? "justify-content-end" : "justify-content-start")">
+                                <div class="p-3 shadow-sm"
+                                     style="max-width: 75%; border-radius: 15px; @(isMine ? "background-color: #0d6efd; color: white;" : "background-color: white; color: #333;")">
+                                    <div style="word-break: break-word;">@msg.Content</div>
+                                    <small class="d-block text-end mt-1 @(isMine ? "text-white-50" : "text-muted")" style="font-size: 10px;">
+                                        @msg.SentAt.ToLocalTime().ToString("hh:mm tt")
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Input Box -->
+                <div class="card-footer bg-white p-3">
+                    <form asp-action="Send" method="post" class="d-flex gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="receiverId" value="@partnerId" />
+                        <input type="text" name="content" class="form-control"
+                               placeholder="Type a message..." autocomplete="off" required />
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            Send 🚀
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Keep chat scrolled to bottom
+    window.onload = function() {
+        var box = document.getElementById("chatBox");
+        if (box) box.scrollTop = box.scrollHeight;
+    };
+</script>

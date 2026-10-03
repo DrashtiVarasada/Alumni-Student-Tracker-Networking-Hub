@@ -19,7 +19,6 @@ namespace AlumniHub.Controllers
             _userManager = userManager;
         }
 
-        // View your profile
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
@@ -32,7 +31,6 @@ namespace AlumniHub.Controllers
             return View(profile);
         }
 
-        // Show create profile form
         public async Task<IActionResult> Create()
         {
             var userId = _userManager.GetUserId(User);
@@ -45,37 +43,40 @@ namespace AlumniHub.Controllers
             return View();
         }
 
-        // Save new profile
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AlumniProfile profile, IFormFile? profileImage)
         {
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
+
+            if (!ModelState.IsValid)
+                return View(profile);
+
             var userId = _userManager.GetUserId(User);
             profile.UserId = userId!;
+            profile.CurrentCompany = profile.CurrentCompany ?? string.Empty;
+            profile.Designation = profile.Designation ?? string.Empty;
+            profile.City = profile.City ?? string.Empty;
+            profile.Bio = profile.Bio ?? string.Empty;
 
             if (profileImage != null && profileImage.Length > 0)
             {
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
                 var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-
                 if (!Directory.Exists(uploadPath))
                     Directory.CreateDirectory(uploadPath);
-
                 var filePath = Path.Combine(uploadPath, fileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
-                {
                     await profileImage.CopyToAsync(stream);
-                }
                 profile.ProfileImage = fileName;
             }
 
             _context.AlumniProfiles.Add(profile);
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index");
         }
 
-        // Show edit profile form
         public async Task<IActionResult> Edit()
         {
             var userId = _userManager.GetUserId(User);
@@ -88,11 +89,16 @@ namespace AlumniHub.Controllers
             return View(profile);
         }
 
-        // Save edited profile
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(AlumniProfile profile, IFormFile? profileImage)
+        public async Task<IActionResult> Edit(AlumniProfile profile, IFormFile? profileImage, bool removeImage = false)
         {
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
+
+            if (!ModelState.IsValid)
+                return View(profile);
+
             var userId = _userManager.GetUserId(User);
             var existing = await _context.AlumniProfiles
                 .FirstOrDefaultAsync(p => p.UserId == userId);
@@ -103,34 +109,32 @@ namespace AlumniHub.Controllers
             existing.FullName = profile.FullName;
             existing.Department = profile.Department;
             existing.GraduationYear = profile.GraduationYear;
-            existing.CurrentCompany = profile.CurrentCompany;
-            existing.Designation = profile.Designation;
-            existing.City = profile.City;
-            existing.Bio = profile.Bio;
+            existing.CurrentCompany = profile.CurrentCompany ?? string.Empty;
+            existing.Designation = profile.Designation ?? string.Empty;
+            existing.City = profile.City ?? string.Empty;
+            existing.Bio = profile.Bio ?? string.Empty;
 
             if (profileImage != null && profileImage.Length > 0)
             {
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
                 var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-
                 if (!Directory.Exists(uploadPath))
                     Directory.CreateDirectory(uploadPath);
-
                 var filePath = Path.Combine(uploadPath, fileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
-                {
                     await profileImage.CopyToAsync(stream);
-                }
                 existing.ProfileImage = fileName;
+            }
+            else if (removeImage)
+            {
+                existing.ProfileImage = null;
             }
 
             _context.AlumniProfiles.Update(existing);
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index");
         }
 
-        // Delete profile
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete()
