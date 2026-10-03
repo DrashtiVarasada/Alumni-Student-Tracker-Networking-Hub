@@ -1,0 +1,42 @@
+﻿@model AlumniHub.Models.StudentProfile
+@{
+    ViewData["Title"] = "Create Student Profile";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>📋 Complete Your Student Profile</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Full Name</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Department</label>
+                            <input asp-for="Department" class="form-control" placeholder="e.g. Information Technology" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Batch Year</label>
+                            <input asp-for="BatchYear" class="form-control" type="number" placeholder="e.g. 2023" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Bio</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3" placeholder="Tell us about yourself..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Profile Image (Optional)</label>
+                            <input type="file" name="profileImage" class="form-control" accept="image/*" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
